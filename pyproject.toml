@@ -1,0 +1,16 @@
+[tool.poetry]
+name = "texture-finder"
+version = "0.1.0"
+description = ""
+authors = ["gmh4589"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = ">=3.11,<3.13"
+pyqt6 = "^6.6.1"
+pillow = "^10.2.0"
+pyinstaller = "^6.4.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
