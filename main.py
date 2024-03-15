@@ -2,7 +2,7 @@ import json
 import os
 import sys
 import shutil
-from subprocess import Popen
+from subprocess import Popen, DEVNULL, SW_HIDE
 
 from PyQt6.QtWidgets import *
 from PyQt6.QtWidgets import QApplication, QMainWindow
@@ -10,6 +10,7 @@ from PyQt6.QtGui import QPixmap, QIcon
 from PyQt6.QtCore import Qt, QRect, QTimer
 
 from PIL import Image, ImageOps, UnidentifiedImageError
+
 import converter
 import codec_list
 from tf import Ui_MainWindow
@@ -25,6 +26,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.short_name = ''
         self.ext = 'webp'
         self.temp_path = os.environ['TEMP']
+        self.temp_file = f'{self.temp_path}\\image.dat'
+
+        if os.path.exists(self.temp_file):
+            os.remove(self.temp_file)
 
         self.setWindowIcon(QIcon('data\\fungus.ico'))
         self.offsetInput.valueChanged.connect(self.dec2hex)
@@ -126,15 +131,15 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         try:
 
-            with open(f'{self.temp_path}\\image.dat', 'rb') as temp_image:
+            with open(self.temp_file, 'rb') as temp_image:
                 temp_image.seek(offset)
                 image_data = temp_image.read()
 
         except FileNotFoundError:
             self.fname_info.setText(self.local["file_not_select"])
-            shutil.copy('data\\fungus.png', f'{self.temp_path}\\image.dat')
+            shutil.copy('data\\fungus.png', self.temp_file)
 
-            with open(f'{self.temp_path}\\image.dat', 'rb') as temp_image:
+            with open(self.temp_file, 'rb') as temp_image:
                 image_data = temp_image.read()
 
         if rotate in (self.local["invert_read"], self.local["invert"]):
@@ -147,11 +152,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         codec, image_data = self.colorWrapper(image_data)
 
         try:
-            data = Image.open(f'{self.temp_path}\\image.dat')
-            self.ext = 'png'
-            data.save(f'{self.temp_path}\\temp.{self.ext}')
+            data = Image.open(self.temp_file)
+            data.save(f'{self.temp_path}\\temp.png')
 
-            with open(f'{self.temp_path}\\image.dat', 'wb') as nd:
+            with open(self.temp_file, 'wb') as nd:
                 nd.write(data.tobytes())
 
             w, h = data.size
@@ -162,7 +166,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.bppInput.setCurrentText(f'{bpp}BPP')
             self.color_schemeInput.setCurrentText(data.mode)
             self.formatData.setText(data.format)
-            image = QPixmap(f'{self.temp_path}\\temp.{self.ext}')
+            image = QPixmap(f'{self.temp_path}\\temp.png')
 
         except (IOError, UnidentifiedImageError):
             self.formatData.setText('')
@@ -221,19 +225,20 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             case _:
                 self.dds_save(width, height, readCodec, image_data)
                 self.ext = 'tga'
-                os.system(f'data\\readdxt.exe {self.temp_path}\\temp.dds')
+                Popen(f'data\\readdxt.exe {self.temp_path}\\temp.dds', SW_HIDE).wait()
                 os.remove(f'{self.temp_path}\\temp.dds')
-                shutil.move(f'{self.temp_path}\\temp00.tga', f'{self.temp_path}\\temp.tga')
+                shutil.copy(f'{self.temp_path}\\temp00.tga', f'{self.temp_path}\\temp.tga')
 
                 try:
-                    image_data = Image.open(f'{self.temp_path}\\temp.{self.ext}').tobytes()
+                    image_data = Image.open(f'{self.temp_path}\\temp.tga')
+                    codec = image_data.mode
+                    image_data = image_data.tobytes()
                 except FileNotFoundError:
                     self.label_info.setText(f'Write error in codec {readCodec}')
+                    codec = 'RGB'
 
                     with open('log.txt', 'a') as log:
                         log.write(f'Write error in codec {readCodec}\n')
-
-                codec = 'RGBA' if 'A' in readCodec.split('_')[0] else 'RGB'
 
         return codec, image_data
 
@@ -264,7 +269,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
             if os.path.exists(self.file_name):
                 shutil.copy(self.file_name, f'{self.temp_path}\\temp.{self.ext}')
-                shutil.copy(self.file_name, f'{self.temp_path}\\image.dat')
+                shutil.copy(self.file_name, self.temp_file)
                 self.fname_info.setText(f'{self.local["file_select"]}\n{self.file_name.split("/")[-1]}')
                 self.draw_image()
             else:
@@ -301,13 +306,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         dump_name = zip_name + '.dmp'
         script = (f'"data\\quickbms.exe" -o -a "{zip_method}" '
                   f'"data\\comtype_scan2.bms" '
-                  f'"{self.temp_path}\\image.dat" "{os.environ["TEMP"]}"').replace("/", "\\")
+                  f'"{self.temp_file}" "{os.environ["TEMP"]}"').replace("/", "\\")
 
         Popen(script).wait()
         dump_file = os.path.join(self.temp_path, dump_name)
 
         if os.path.exists(dump_file):
-            shutil.move(dump_file, f'{self.temp_path}\\image.dat')
+            shutil.move(dump_file, self.temp_file)
             self.draw_image()
             lucky = True
         else:
@@ -319,8 +324,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def closeEvent(self, event):
         ext_list = ['bmp', 'png', 'tga', 'webp', 'tif', 'dds']
 
-        if os.path.exists(f'{self.temp_path}\\image.dat'):
-            os.remove(f'{self.temp_path}\\image.dat')
+        if os.path.exists(self.temp_file):
+            os.remove(self.temp_file)
 
         for ext in ext_list:
 
