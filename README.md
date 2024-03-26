@@ -23,7 +23,7 @@ Nothing much has changed, but in the process of entering the length and width pa
 8. Now, you can click on the “SAVE” button and save the image in a format convenient for you.
 
 Now try to determine the file format example2.dat and example3.dat yourself
-Hint: You will also need to use the “Convert” option to search for the image in example2.dat so that the image you are looking for is not upside down.
+Hint: You will also need to use the “Change Image” option to search for the image in example2.dat so that the image you are looking for is not upside down.
 The output should be this image:
 ![craiyon_164519_fantastic_forest_with_giant_fungus](https://github.com/gmh4589/fungi/assets/41452060/1c77ad12-c1a6-4869-9d85-3e8ab8cbac30)
 
