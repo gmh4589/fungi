@@ -25,7 +25,7 @@ Nothing much has changed, but in the process of entering the length and width pa
 Now try to determine the file format example2.dat and example3.dat yourself
 Hint: You will also need to use the “Change Image” option to search for the image in example2.dat so that the image you are looking for is not upside down.
 The output should be this image:
-![craiyon_164519_fantastic_forest_with_giant_fungus](https://github.com/gmh4589/fungi/assets/41452060/1c77ad12-c1a6-4869-9d85-3e8ab8cbac30)
+![craiyon_164527_fantastic_forest_with_giant_fungus](https://github.com/gmh4589/fungi/assets/41452060/bdd8c670-040f-46e7-96a5-e7e038e505d0)
 
 In order to get an image from the example3.dat file, you will already need to determine the data compression method. To do this, you need to start entering the name of the compression algorithms in the “ZIP method” field. Since it is almost impossible to understand which of the almost 1000 algorithms a file was compressed without some information about the compression method, I will tell you that this file is compressed using a method whose name begins with the Latin P.
 In the third example, the compressed file is a regular BMP file, therefore, as soon as the compression method is correctly determined, the program itself will receive all other parameters from the desired image.
