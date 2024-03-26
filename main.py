@@ -31,6 +31,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         # self.temp_path = os.environ['TEMP']
         self.temp_file = f'{self.temp_path}\\image.dat'
 
+        if not os.path.exists(self.temp_path):
+            os.makedirs(self.temp_path)
+
         if os.path.exists(self.temp_file):
             os.remove(self.temp_file)
 
