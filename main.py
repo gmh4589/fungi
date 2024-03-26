@@ -2,19 +2,21 @@ import json
 import os
 import sys
 import shutil
-from subprocess import Popen, DEVNULL, SW_HIDE
+from subprocess import Popen, SW_HIDE
 
 from PyQt6.QtWidgets import *
 from PyQt6.QtWidgets import QApplication, QMainWindow
 from PyQt6.QtGui import QPixmap, QIcon
 from PyQt6.QtCore import Qt, QRect, QTimer
 
-from PIL import Image, ImageOps, UnidentifiedImageError
+from PIL import Image, ImageOps, UnidentifiedImageError, ImageFile
 
 import converter
 import codec_list
 from tf import Ui_MainWindow
 from zip_list import zip_methods
+
+ImageFile.LOAD_TRUNCATED_IMAGES = True
 
 
 class MainWindow(QMainWindow, Ui_MainWindow):
@@ -25,7 +27,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.file_name = ''
         self.short_name = ''
         self.ext = 'webp'
-        self.temp_path = os.environ['TEMP']
+        self.temp_path = 'temp'
+        # self.temp_path = os.environ['TEMP']
         self.temp_file = f'{self.temp_path}\\image.dat'
 
         if os.path.exists(self.temp_file):
@@ -56,6 +59,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.color_schemeInput.currentIndexChanged.connect(self.draw_image)
         self.rotateInput.currentIndexChanged.connect(self.draw_image)
         self.langInput.currentIndexChanged.connect(self.change_lang)
+        self.offset_hexData.textChanged.connect(self.hex_offset_set)
         self.langInput.hide()
         self.langLabel.hide()
         self.hide_setting = True
@@ -69,6 +73,19 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.graphicsPreview.setAlignment(Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignVCenter)
         self.timer = QTimer(self)
         self.show()
+
+    def hex_offset_set(self):
+        hex_offset = self.offset_hexData.text()
+
+        try:
+            self.offsetInput.setValue(int(hex_offset, 16))
+        except (ValueError, OverflowError):
+            self.label_info.setText(f'Enter correct hex data!')
+
+            for char in hex_offset:
+
+                if char not in 'x0123456789abcdefABCDEF':
+                    self.offset_hexData.setText(hex_offset.replace(char, ''))
 
     def createList(self):
 
@@ -206,14 +223,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         bpp = self.bppInput.currentText()
         width = int(self.widthInput.value())
         height = int(self.heightInput.value())
-        self.ext = 'webp'
+        codec = readCodec
 
         match readCodec:
             case 'RGB' | 'HSV' | 'CMYK' | 'YCbCr' | 'RGBA' | 'RGB' | 'PA' | 'LA' | 'F' | \
                  'RGBX' | 'RGBa' | '1' | 'L' | 'I;16L' | 'I;16B' | 'I' | '':
-                codec = readCodec
+                self.ext = 'webp'
             case 'LAB':
-                codec = readCodec
                 self.ext = 'tif'
             case 'HSL':
                 codec = 'HSV'
@@ -222,17 +238,27 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                  'ARGB' | 'ARBG' | 'AGBR' | 'AGRB' | 'ABRG' | 'ABGR' | 'XBGR' | 'XRGB' | 'BGRX':
                 image_data = converter.BGR2RGB(image_data, readCodec)
                 codec = 'RGB' if bpp == '24BPP' else 'RGBA'
+            # case 'DXT1' | 'DXT3' | 'DXT5' | 'DX10' | 'BC5S' | 'BC5U' | 'ATI1' | 'ATI2':
+            #     image_data = Image.open(f'{self.temp_path}\\temp.dds')
+            #     codec = image_data.mode
+            #     image_data.save(f'{self.temp_path}\\temp.png')
+            #     image_data = Image.open(f'{self.temp_path}\\temp.png').tobytes()
+            #     os.remove(f'{self.temp_path}\\temp.dds')
             case _:
                 self.dds_save(width, height, readCodec, image_data)
-                self.ext = 'tga'
-                Popen(f'data\\readdxt.exe {self.temp_path}\\temp.dds', SW_HIDE).wait()
-                os.remove(f'{self.temp_path}\\temp.dds')
-                shutil.copy(f'{self.temp_path}\\temp00.tga', f'{self.temp_path}\\temp.tga')
+                self.ext = 'png'
+
+                # Popen(f'data\\readdxt.exe {self.temp_path}\\temp.dds', SW_HIDE).wait()
+                Popen(f'data\\texconv -ft PNG {self.temp_path}\\temp.dds', SW_HIDE).wait()
 
                 try:
-                    image_data = Image.open(f'{self.temp_path}\\temp.tga')
+                    # shutil.move(f'{self.temp_path}\\temp00.tga', f'{self.temp_path}\\temp.tga')
+                    shutil.move(f'temp.PNG', f'{self.temp_path}\\temp.png')
+                    # image_data = Image.open(f'{self.temp_path}\\temp.tga')
+                    image_data = Image.open(f'{self.temp_path}\\temp.png')
                     codec = image_data.mode
                     image_data = image_data.tobytes()
+
                 except FileNotFoundError:
                     self.label_info.setText(f'Write error in codec {readCodec}')
                     codec = 'RGB'
@@ -265,6 +291,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         if not reopen:
             self.file_name = QFileDialog.getOpenFileName(self, 'Open File')[0]
 
+            if os.path.exists(f'{self.temp_path}\\temp.png'):
+                os.remove(f'{self.temp_path}\\temp.png')
+
         if self.file_name:
 
             if os.path.exists(self.file_name):
@@ -288,6 +317,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                                                'TIFF file (*.tif);;'
                                                'Icon file (*.ico);;'
                                                'DDS file (*.dds)')[0]
+
             if name:
                 try:
                     image.save(name)
@@ -306,7 +336,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         dump_name = zip_name + '.dmp'
         script = (f'"data\\quickbms.exe" -o -a "{zip_method}" '
                   f'"data\\comtype_scan2.bms" '
-                  f'"{self.temp_file}" "{os.environ["TEMP"]}"').replace("/", "\\")
+                  f'"{self.temp_file}" "{self.temp_path}"').replace("/", "\\")
 
         Popen(script).wait()
         dump_file = os.path.join(self.temp_path, dump_name)
