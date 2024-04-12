@@ -54,4 +54,36 @@ def HSL2HSV(data):
         return byte_array
 
 
+def YUV2RGB(data):
+    byte_array = bytes(data)
+    new_data = []
 
+    for i in range(0, len(byte_array), 3):
+        Y = i - 16
+        U = (i + 1) - 128
+        V = (i + 2) - 128
+        R = int((1.164 * Y) + (1.596 * V))
+        G = int((1.164 * Y) - (0.392 * U) - (0.813 * V))
+        B = int((1.164 * Y) + (2.017 * U))
+        new_data += [R, G, B]
+    print(new_data)
+
+    # return bytes(new_data)
+
+
+def AYUV2ARGB(data):
+    byte_array = bytes(data)
+    new_data = []
+
+    for i in range(0, len(byte_array), 4):
+        A = i
+        Y = (i + 1) - 16
+        U = (i + 2) - 128
+        V = (i + 3) - 128
+        R = int((1.164 * Y) + (1.596 * V))
+        G = int((1.164 * Y) - (0.392 * U) - (0.813 * V))
+        B = int((1.164 * Y) + (2.017 * U))
+        new_data += [A, R, G, B]
+    print(new_data)
+
+    # return bytes(new_data)

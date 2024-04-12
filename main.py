@@ -41,8 +41,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.offsetInput.valueChanged.connect(self.dec2hex)
         self.compressInput.items = [key for key in zip_methods.keys()]
         self.compressInput.setCurrentText(self.local["no_zip"])
-        self.bppInput.addItems(
-            ['1BPP', '8BPP', '10BPP', '16BPP', '24BPP', '32BPP', '64BPP', '96BPP', '128BPP', 'DirectX'])
+        self.bppInput.addItems(['1BPP', '4BPP', '8BPP', '16BPP', '24BPP', '32BPP', '64BPP', '96BPP', '128BPP', 'DirectX',
+                                # '2BPP', '10BPP', '12BPP', '48BPP',
+                                ])
         self.bppInput.setCurrentText('32BPP')
         self.rotateInput.addItems([self.local['no'], f'90° {self.local["left"]}', f'90° {self.local["right"]}', '180°',
                                    self.local['mirror_h'], self.local['mirror_v'], self.local['invert_read'],
@@ -91,6 +92,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                     self.offset_hexData.setText(hex_offset.replace(char, ''))
 
     def createList(self):
+        # работает: 62
+        # проблемы: 48
 
         currentChange = self.bppInput.currentText()
         # bpp = str(int(int(currentChange.replace('BPP', '')) / 3))
@@ -98,42 +101,67 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         match currentChange:
             # 1-bit Grayscale, 2 colors palette
             case '1BPP':
-                codecsList = ['1']
+                codecsList = ['1bit']
+            # case '2BPP':
+            #     codecsList = ['2bit_grey']
+            case '4BPP':
+                codecsList = ['4bit_grey']
             case '8BPP':
-                codecsList = ['L', 'A8_UNORM', 'R8_SINT', 'R8_SNORM', 'R8_UINT', 'R8_UNORM']
-            case '10BPP':
-                codecsList = ['Y210', 'Y410']
+                codecsList = ['L', 'A8_UNORM', 'R8_UNORM',
+                              # TODO На проверку:
+                              # 'R8_SINT', 'R8_SNORM', 'R8_UINT',
+                              ]
+            # case '10BPP':
+            #     codecsList = ['Y210', 'Y410']
             # 5-bit RGB with 1-bit alpha chanel, R5G6B5, 16-bit Grayscale
             case '16BPP':
-                codecsList = ['B4G4R4A4_UNORM', 'B5G5R5A1_UNORM', 'B5G6R5_UNORM',
-                              'R8G8_SINT', 'R8G8_SNORM', 'R8G8_UINT', 'R8G8_UNORM',
-                              'R16_FLOAT', 'R16_SINT', 'R16_SNORM', 'R16_UINT', 'R16_UNORM',
-                              'LA', 'PA', 'I;16L', 'I;16B', 'Y216', 'Y416']
+                codecsList = ['B5G6R5_UNORM', 'B5G5R5A1_UNORM', 'B4G4R4A4_UNORM', 'R16_FLOAT', 'R16_UNORM', 'LA', 'PA',
+                              'I;16L', 'I;16B'
+                              # TODO На проверку:
+                              # 'Y216', 'Y416', 'R8G8_SINT', 'R8G8_SNORM', 'R8G8_UINT', 'R8G8_UNORM', 'R16_SINT',
+                              # 'R16_SNORM', 'R16_UINT',
+                              ]
             # 8-bit RGB, HSL, HSV, LAB, YCbCr
             case '24BPP':
-                codecsList = ['RGB', 'RBG', 'GBR', 'GRB', 'BRG', 'BGR', 'HSV', 'HSL', 'YCbCr', 'LAB', 'YUY2']
+                codecsList = ['RGB', 'RBG', 'GBR', 'GRB', 'BRG', 'BGR', 'HSV', 'HSL', 'YCbCr', 'LAB',
+                              # TODO На проверку:
+                              # 'YUY2', 'YUV',
+                              ]
             # 8-bit RGBA, CMYK, 32-bit Grayscale
             case '32BPP':
-                codecsList = ['RGBA', 'RBGA', 'GBRA', 'GRBA', 'BRGA', 'BGRA',
-                              'ARGB', 'ARBG', 'AGBR', 'AGRB', 'ABRG', 'ABGR',
-                              'XBGR', 'XRGB', 'BGRX', 'RGBX', 'RGBa', 'CMYK',
-                              'B8G8R8A8_UNORM', 'B8G8R8A8_UNORM_SRGB', 'B8G8R8X8_UNORM', 'B8G8R8X8_UNORM_SRGB',
-                              'G8R8_G8B8_UNORM', 'R10G10B10A2_UINT', 'R10G10B10A2_UNORM', 'R10G10B10_XR_BIAS_A2_UNORM',
-                              'R11G11B10_FLOAT', 'R16G16_FLOAT', 'R16G16_SINT', 'R16G16_SNORM', 'R16G16_UINT',
-                              'R16G16_UNORM', 'R32_FLOAT', 'R32_SINT', 'R32_UINT', 'R8G8B8A8_SINT', 'R8G8B8A8_SNORM',
-                              'R8G8B8A8_UINT', 'R8G8B8A8_UNORM', 'R8G8B8A8_UNORM_SRGB', 'R8G8_B8G8_UNORM',
-                              'R9G9B9E5_SHAREDEXP', 'I', 'F', 'AYUV']
+                codecsList = ['RGBA', 'RBGA', 'GBRA', 'GRBA', 'BRGA', 'BGRA', 'ARGB', 'ARBG', 'AGBR', 'AGRB', 'ABRG',
+                              'ABGR', 'CMYK', 'B8G8R8A8_UNORM_SRGB', 'B8G8R8X8_UNORM_SRGB', 'R10G10B10A2_UNORM',
+                              'R10G10B10_XR_BIAS_A2_UNORM', 'R32_FLOAT', 'I', 'F',
+                              # TODO На проверку:
+                              # 'B8G8R8A8_UNORM', 'B8G8R8X8_UNORM', 'G8R8_G8B8_UNORM', 'R8G8_B8G8_UNORM',
+                              # 'R8G8B8A8_SINT', 'R8G8B8A8_SNORM', 'R8G8B8A8_UINT', 'R8G8B8A8_UNORM',
+                              # 'R8G8B8A8_UNORM_SRGB', 'R9G9B9E5_SHAREDEXP', 'R10G10B10A2_UINT', 'R11G11B10_FLOAT',
+                              # 'R16G16_FLOAT', 'R16G16_SINT', 'R16G16_SNORM', 'R16G16_UINT', 'R16G16_UNORM',
+                              # 'R32_SINT', 'R32_UINT', 'AYUV',
+                              ]
             case '64BPP':
                 codecsList = ['R16G16B16A16_FLOAT', 'R16G16B16A16_SINT', 'R16G16B16A16_SNORM', 'R16G16B16A16_UINT',
-                              'R16G16B16A16_UNORM', 'R32G32_FLOAT', 'R32G32_SINT', 'R32G32_UINT']
+                              # TODO На проверку:
+                              # 'R16G16B16A16_UNORM', 'R16G16B16A16_SNORM', 'R32G32_FLOAT', 'R32G32_SINT',
+                              # 'R32G32_UINT',
+                              ]
             case '96BPP':
-                codecsList = ['R32G32B32_FLOAT', 'R32G32B32_SINT', 'R32G32B32_UINT']
+                codecsList = ['R32G32B32_FLOAT',
+                              # TODO На проверку:
+                              # 'R32G32B32_SINT', 'R32G32B32_UINT',
+                              ]
             case '128BPP':
-                codecsList = ['R32G32B32A32_FLOAT', 'R32G32B32A32_SINT', 'R32G32B32A32_UINT']
+                codecsList = ['R32G32B32A32_FLOAT',
+                              # TODO На проверку:
+                              # 'R32G32B32A32_SINT', 'R32G32B32A32_UINT'
+                              ]
             case 'DirectX':
-                codecsList = ['BC1_UNORM', 'BC1_UNORM_SRGB', 'BC2_UNORM', 'BC2_UNORM_SRGB', 'BC3_UNORM',
-                              'BC3_UNORM_SRGB', 'BC4_SNORM', 'BC4_UNORM', 'BC5_SNORM', 'BC5_UNORM', 'BC6H_SF16',
-                              'BC6H_UF16', 'BC7_UNORM', 'BC7_UNORM_SRGB']
+                codecsList = ['BC1_UNORM', 'BC2_UNORM', 'BC3_UNORM', 'BC4_UNORM', 'BC5_UNORM', 'BC6H_SF16',
+                              'BC6H_UF16', 'BC7_UNORM', 'BC7_UNORM_SRGB', 'BC1_UNORM_SRGB', 'BC2_UNORM_SRGB',
+                              'BC3_UNORM_SRGB',
+                              # TODO На проверку:
+                              # 'BC4_SNORM', 'BC5_SNORM',
+                              ]
             case _:
                 codecsList = []
 
@@ -188,7 +216,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.formatData.setText(data.format)
             image = QPixmap(f'{self.temp_path}\\temp.png')
 
-        except (IOError, UnidentifiedImageError):
+        except (IOError, UnidentifiedImageError, NotImplementedError):
             self.formatData.setText('')
 
             try:
@@ -227,13 +255,29 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         width = int(self.widthInput.value())
         height = int(self.heightInput.value())
         codec = readCodec
+        self.ext = 'webp'
 
         match readCodec:
+
             case 'RGB' | 'HSV' | 'CMYK' | 'YCbCr' | 'RGBA' | 'RGB' | 'PA' | 'LA' | 'F' | \
-                 'RGBX' | 'RGBa' | '1' | 'L' | 'I;16L' | 'I;16B' | 'I' | '':
-                self.ext = 'webp'
+                 'RGBX' | 'RGBa' | 'L' | 'I;16L' | 'I;16B' | 'I' | '':
+                pass
+            case '1bit':
+                codec = '1'
+            case '2bit_grey' | '4bit_grey':
+                self.bmp_save(width, height, int(bpp[0]))
+                self.ext = 'bmp'
+                image_data = Image.open(f'{self.temp_path}\\temp.{self.ext}')
+                codec = image_data.mode
+                image_data = image_data.tobytes()
             case 'LAB':
                 self.ext = 'tif'
+            case 'YUV':
+                codec = 'RGB'
+                image_data = converter.YUV2RGB(image_data)
+            case 'AYUV':
+                codec = 'ARGB'
+                image_data = converter.AYUV2ARGB(image_data)
             case 'HSL':
                 codec = 'HSV'
                 image_data = converter.HSL2HSV(image_data)
@@ -241,24 +285,20 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                  'ARGB' | 'ARBG' | 'AGBR' | 'AGRB' | 'ABRG' | 'ABGR' | 'XBGR' | 'XRGB' | 'BGRX':
                 image_data = converter.BGR2RGB(image_data, readCodec)
                 codec = 'RGB' if bpp == '24BPP' else 'RGBA'
-            # case 'DXT1' | 'DXT3' | 'DXT5' | 'DX10' | 'BC5S' | 'BC5U' | 'ATI1' | 'ATI2':
-            #     image_data = Image.open(f'{self.temp_path}\\temp.dds')
-            #     codec = image_data.mode
-            #     image_data.save(f'{self.temp_path}\\temp.png')
-            #     image_data = Image.open(f'{self.temp_path}\\temp.png').tobytes()
-            #     os.remove(f'{self.temp_path}\\temp.dds')
-            case _:
-                self.dds_save(width, height, readCodec, image_data)
-                self.ext = 'png'
 
-                # Popen(f'data\\readdxt.exe {self.temp_path}\\temp.dds', SW_HIDE).wait()
-                Popen(f'data\\texconv -ft PNG {self.temp_path}\\temp.dds', SW_HIDE).wait()
+            case _:
+                readDXT = ('B4G4R4A4_UNORM', )
+                self.dds_save(width, height, readCodec)
 
                 try:
-                    # shutil.move(f'{self.temp_path}\\temp00.tga', f'{self.temp_path}\\temp.tga')
-                    shutil.move(f'temp.PNG', f'{self.temp_path}\\temp.png')
-                    # image_data = Image.open(f'{self.temp_path}\\temp.tga')
-                    image_data = Image.open(f'{self.temp_path}\\temp.png')
+
+                    self.ext = 'tga' if readCodec in readDXT else 'png'
+                    Popen(f'{"data/readdxt" if readCodec in readDXT else "data/texconv -ft PNG"} '
+                          f'{self.temp_path}\\temp.dds', SW_HIDE).wait()
+                    shutil.move(f'{self.temp_path}\\temp00.tga' if readCodec in readDXT else 'temp.PNG',
+                                f'{self.temp_path}\\temp.{self.ext}')
+                    image_data = Image.open(f'{self.temp_path}\\temp.{self.ext}')
+
                     codec = image_data.mode
                     image_data = image_data.tobytes()
 
@@ -271,23 +311,46 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         return codec, image_data
 
-    def dds_save(self, y, x, codec, data):
+    def dds_save(self, y, x, codec):
+
+        with open(f'{self.temp_path}\\image.dat', 'rb') as temp_dt:
+            temp_dt.seek(int(self.offsetInput.value()))
+            image_data = temp_dt.read()
 
         try:
-            flags = codec_list.codec_list[codec]['flags']
-            cdc = codec_list.codec_list[codec]['codec']
-            bpp = codec_list.codec_list[codec]['bpp']
-            rgba_mask = codec_list.codec_list[codec]['rgb_mask']
-            h_flg = codec_list.codec_list[codec]['head_flg']
+            keys = codec_list.codec_list[codec]['keys']
+            pixel_format = codec_list.codec_list[codec]['pixel_format']
+            depth = codec_list.codec_list[codec]['depth']
+            rgb = codec_list.codec_list[codec]['rgb']
+            codec_name = codec_list.codec_list[codec]['codec']
+            codec_data = codec_list.codec_list[codec]['codec_data']
 
             with open(f'{self.temp_path}\\temp.dds', 'wb') as dds_file:
-                dds_file.write(b'DDS\x20\x7C\x00\x00\x00' + h_flg +  # DDS Header
+                dds_file.write(b'DDS\x20\x7C\x00\x00\x00' +
+                               keys + pixel_format + depth + b'\x00' +
                                x.to_bytes(4, byteorder='little') +  # Height
                                y.to_bytes(4, byteorder='little') * 2 +  # width and linear size
-                               b'\x01\x00\x00\x00' * 2 + b'\x00' * 44 + b'\x20\x00\x00\x00' +
-                               flags + cdc + bpp + rgba_mask + b'\x08\x10\x40\x00' + b'\x00' * 16 + data)
+                               b'\x01' + (b'\x00' * 51) + b'\x20\x00\x00\x00' +
+                               rgb + codec_name + codec_data + image_data)
+
         except (KeyError, ValueError):
+            print('Something wrong...')
             pass
+
+    def bmp_save(self, x, y, b):
+
+        with open(f'{self.temp_path}\\image.dat', 'rb') as temp_dt:
+            temp_dt.seek(int(self.offsetInput.value()))
+            image_data = temp_dt.read()
+
+        with open(f'{self.temp_path}\\temp.bmp', 'wb') as bmp_file:
+            bmp_file.write(b'BM' + (len(image_data) + 0x36).to_bytes(4, byteorder='little') +
+                           b'\x00\x00\x00\x00\x36\x00\x00\x00\x28\x00\x00\x00' +
+                           x.to_bytes(4, byteorder='little') +
+                           y.to_bytes(4, byteorder='little') + b'\x01\x00' +
+                           b.to_bytes(2, byteorder='little') + b'\x00\x00\x00\x00' +
+                           len(image_data).to_bytes(4, byteorder='little') + (b'\x00' * 16) +
+                           image_data)
 
     def file_open(self, reopen=False):
 

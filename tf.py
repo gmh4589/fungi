@@ -71,7 +71,7 @@ class Ui_MainWindow:
         self.formLayout.setWidget(2, QFormLayout.ItemRole.FieldRole, self.heightInput)
         self.offset_hexLabel = QLabel(self.formLayoutWidget)
         self.formLayout.setWidget(3, QFormLayout.ItemRole.LabelRole, self.offset_hexLabel)
-        self.offset_hexData = QLabel(self.formLayoutWidget)
+        self.offset_hexData = QLineEdit(self.formLayoutWidget)
         self.formLayout.setWidget(3, QFormLayout.ItemRole.FieldRole, self.offset_hexData)
         self.offsetLabel = QLabel(self.formLayoutWidget)
         self.formLayout.setWidget(4, QFormLayout.ItemRole.LabelRole, self.offsetLabel)
