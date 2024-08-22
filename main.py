@@ -41,8 +41,20 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.offsetInput.valueChanged.connect(self.dec2hex)
         self.compressInput.items = [key for key in zip_methods.keys()]
         self.compressInput.setCurrentText(self.local["no_zip"])
-        self.bppInput.addItems(['1BPP', '4BPP', '8BPP', '16BPP', '24BPP', '32BPP', '64BPP', '96BPP', '128BPP', 'DirectX',
-                                # '2BPP', '10BPP', '12BPP', '48BPP',
+        self.bppInput.addItems(['1BPP',
+                                '2BPP',
+                                '4BPP',
+                                '8BPP',
+                                # '10BPP',
+                                # '12BPP',
+                                '16BPP',
+                                '24BPP',
+                                '32BPP',
+                                # '48BPP',
+                                '64BPP',
+                                '96BPP',
+                                '128BPP',
+                                'DirectX',
                                 ])
         self.bppInput.setCurrentText('32BPP')
         self.rotateInput.addItems([self.local['no'], f'90° {self.local["left"]}', f'90° {self.local["right"]}', '180°',
@@ -102,8 +114,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             # 1-bit Grayscale, 2 colors palette
             case '1BPP':
                 codecsList = ['1bit']
-            # case '2BPP':
-            #     codecsList = ['2bit_grey']
+            case '2BPP':
+                codecsList = ['2bit_grey']
             case '4BPP':
                 codecsList = ['4bit_grey']
             case '8BPP':
@@ -111,6 +123,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                               # TODO На проверку:
                               # 'R8_SINT', 'R8_SNORM', 'R8_UINT',
                               ]
+            case '12BPP':
+                codecsList = ['R4G4B4']
             # case '10BPP':
             #     codecsList = ['Y210', 'Y410']
             # 5-bit RGB with 1-bit alpha chanel, R5G6B5, 16-bit Grayscale
@@ -191,8 +205,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 image_data = temp_image.read()
 
         if rotate in (self.local["invert_read"], self.local["invert"]):
-            byte_array = list(image_data)
-            image_data = bytes(reversed(byte_array))
+            image_data = bytes(reversed(list(image_data)))
 
         if os.path.exists(f'{self.temp_path}\\temp.{self.ext}'):
             os.remove(f'{self.temp_path}\\temp.{self.ext}')
@@ -264,8 +277,17 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 pass
             case '1bit':
                 codec = '1'
-            case '2bit_grey' | '4bit_grey':
-                self.bmp_save(width, height, int(bpp[0]))
+            case '2bit_grey' | '4bit_grey' | 'R4G4B4':
+                bit = 0
+
+                for sym in readCodec:
+
+                    try:
+                        bit += int(sym)
+                    except ValueError:
+                        pass
+
+                self.bmp_save(width, height, bit)
                 self.ext = 'bmp'
                 image_data = Image.open(f'{self.temp_path}\\temp.{self.ext}')
                 codec = image_data.mode
@@ -318,30 +340,23 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             image_data = temp_dt.read()
 
         try:
-            keys = codec_list.codec_list[codec]['keys']
-            pixel_format = codec_list.codec_list[codec]['pixel_format']
-            depth = codec_list.codec_list[codec]['depth']
-            rgb = codec_list.codec_list[codec]['rgb']
-            codec_name = codec_list.codec_list[codec]['codec']
-            codec_data = codec_list.codec_list[codec]['codec_data']
-
-            with open(f'{self.temp_path}\\temp.dds', 'wb') as dds_file:
-                dds_file.write(b'DDS\x20\x7C\x00\x00\x00' +
-                               keys + pixel_format + depth + b'\x00' +
-                               x.to_bytes(4, byteorder='little') +  # Height
-                               y.to_bytes(4, byteorder='little') * 2 +  # width and linear size
-                               b'\x01' + (b'\x00' * 51) + b'\x20\x00\x00\x00' +
-                               rgb + codec_name + codec_data + image_data)
+            dds_image = codec_list.DDSCreator()
+            dds_image.dds_save(y, x, codec, f'{self.temp_path}\\temp', image_data)
 
         except (KeyError, ValueError):
             print('Something wrong...')
             pass
 
     def bmp_save(self, x, y, b):
+        print(b)
 
         with open(f'{self.temp_path}\\image.dat', 'rb') as temp_dt:
             temp_dt.seek(int(self.offsetInput.value()))
             image_data = temp_dt.read()
+
+        if b == 2:
+            image_data = converter.conv_2BPP(image_data)
+            b = 4
 
         with open(f'{self.temp_path}\\temp.bmp', 'wb') as bmp_file:
             bmp_file.write(b'BM' + (len(image_data) + 0x36).to_bytes(4, byteorder='little') +
@@ -385,6 +400,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                                                'DDS file (*.dds)')[0]
 
             if name:
+
                 try:
                     image.save(name)
                     self.label_info.setText(f'{self.local["file_saved"]}\n{name}')
