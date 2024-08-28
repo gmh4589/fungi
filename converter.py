@@ -1,3 +1,4 @@
+import numpy
 
 
 # For 24 and 32 bits
@@ -54,6 +55,13 @@ def HSL2HSV(data):
         return byte_array
 
 
+def conv_2BPP(data):
+    byte_array = numpy.frombuffer(data, dtype=numpy.uint8)
+    split_array = numpy.unpackbits(byte_array[:, numpy.newaxis], axis=1)[:, -2:].reshape(-1, 8)
+
+    return split_array.tobytes()
+
+
 def YUV2RGB(data):
     byte_array = bytes(data)
     new_data = []
@@ -66,9 +74,9 @@ def YUV2RGB(data):
         G = int((1.164 * Y) - (0.392 * U) - (0.813 * V))
         B = int((1.164 * Y) + (2.017 * U))
         new_data += [R, G, B]
-    print(new_data)
 
-    # return bytes(new_data)
+    print(new_data)
+    return bytes(new_data)
 
 
 def AYUV2ARGB(data):
@@ -84,6 +92,6 @@ def AYUV2ARGB(data):
         G = int((1.164 * Y) - (0.392 * U) - (0.813 * V))
         B = int((1.164 * Y) + (2.017 * U))
         new_data += [A, R, G, B]
-    print(new_data)
 
-    # return bytes(new_data)
+    print(new_data)
+    return bytes(new_data)

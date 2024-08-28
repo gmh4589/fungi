@@ -15,6 +15,7 @@ import converter
 import codec_list
 from tf import Ui_MainWindow
 from zip_list import zip_methods
+from palette import PaletteSelector
 
 ImageFile.LOAD_TRUNCATED_IMAGES = True
 
@@ -41,7 +42,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.offsetInput.valueChanged.connect(self.dec2hex)
         self.compressInput.items = [key for key in zip_methods.keys()]
         self.compressInput.setCurrentText(self.local["no_zip"])
-        self.bppInput.addItems(['1BPP',
+        self.bppInput.addItems(['Palette',
+                                '1BPP',
                                 '2BPP',
                                 '4BPP',
                                 '8BPP',
@@ -111,7 +113,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         # bpp = str(int(int(currentChange.replace('BPP', '')) / 3))
 
         match currentChange:
-            # 1-bit Grayscale, 2 colors palette
+            case 'Palette':
+                codecsList = ['Palette']
+            # 1-bit Grayscale
             case '1BPP':
                 codecsList = ['1bit']
             case '2BPP':
@@ -307,6 +311,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                  'ARGB' | 'ARBG' | 'AGBR' | 'AGRB' | 'ABRG' | 'ABGR' | 'XBGR' | 'XRGB' | 'BGRX':
                 image_data = converter.BGR2RGB(image_data, readCodec)
                 codec = 'RGB' if bpp == '24BPP' else 'RGBA'
+            case 'Palette':
+                codec = 'P'
+                pal_sel = PaletteSelector()
+                pal_sel.exec()
 
             case _:
                 readDXT = ('B4G4R4A4_UNORM', )
