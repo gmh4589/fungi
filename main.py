@@ -67,6 +67,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.saveButton.clicked.connect(self.save_image)
         self.reOpenButton.clicked.connect(lambda: self.file_open(reopen=True))
         self.settingButton.clicked.connect(self.hide_show_setting)
+        self.palette_btn.clicked.connect(self.select_palette)
 
         self.widthInput.valueChanged.connect(self.draw_image)
         self.heightInput.valueChanged.connect(self.draw_image)
@@ -75,6 +76,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.compressInput.currentIndexChanged.connect(self.unzip)
         self.bppInput.currentIndexChanged.connect(self.createList)
         self.color_schemeInput.currentIndexChanged.connect(self.draw_image)
+        self.color_schemeInput.currentTextChanged.connect(self.set_buttons)
         self.rotateInput.currentIndexChanged.connect(self.draw_image)
         self.langInput.currentIndexChanged.connect(self.change_lang)
         self.offset_hexData.textChanged.connect(self.hex_offset_set)
@@ -92,6 +94,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.timer = QTimer(self)
         self.show()
 
+    @staticmethod
+    def select_palette():
+        ps = PaletteSelector()
+        ps.exec()
+
     def hex_offset_set(self):
         hex_offset = self.offset_hexData.text()
 
@@ -106,8 +113,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                     self.offset_hexData.setText(hex_offset.replace(char, ''))
 
     def createList(self):
-        # работает: 62
-        # проблемы: 48
+        # работает: 70
+        # проблемы: 45
 
         currentChange = self.bppInput.currentText()
         # bpp = str(int(int(currentChange.replace('BPP', '')) / 3))
@@ -123,7 +130,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             case '4BPP':
                 codecsList = ['4bit_grey']
             case '8BPP':
-                codecsList = ['L', 'A8_UNORM', 'R8_UNORM',
+                codecsList = ['L', 'A8_UNORM', 'R8_UNORM', 'ATI1',
                               # TODO На проверку:
                               # 'R8_SINT', 'R8_SNORM', 'R8_UINT',
                               ]
@@ -141,27 +148,28 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                               ]
             # 8-bit RGB, HSL, HSV, LAB, YCbCr
             case '24BPP':
-                codecsList = ['RGB', 'RBG', 'GBR', 'GRB', 'BRG', 'BGR', 'HSV', 'HSL', 'YCbCr', 'LAB',
+                codecsList = ['RGB', 'RBG', 'GBR', 'GRB', 'BRG', 'BGR', 'HSV', 'HSL', 'YCbCr', 'LAB', 'ATI2', 'YUV',
                               # TODO На проверку:
-                              # 'YUY2', 'YUV',
+                              # 'YUY2',
                               ]
             # 8-bit RGBA, CMYK, 32-bit Grayscale
             case '32BPP':
                 codecsList = ['RGBA', 'RBGA', 'GBRA', 'GRBA', 'BRGA', 'BGRA', 'ARGB', 'ARBG', 'AGBR', 'AGRB', 'ABRG',
-                              'ABGR', 'CMYK', 'B8G8R8A8_UNORM_SRGB', 'B8G8R8X8_UNORM_SRGB', 'R10G10B10A2_UNORM',
-                              'R10G10B10_XR_BIAS_A2_UNORM', 'R32_FLOAT', 'I', 'F',
+                              'ABGR', 'CMYK', 'B8G8R8A8_UNORM_SRGB', 'B8G8R8X8_UNORM_SRGB', 'B8G8R8A8_UNORM',
+                              'B8G8R8X8_UNORM', 'R10G10B10A2_UNORM', 'R10G10B10_XR_BIAS_A2_UNORM', 'R32_FLOAT',
+                              'I', 'F', 'AYUV'
                               # TODO На проверку:
-                              # 'B8G8R8A8_UNORM', 'B8G8R8X8_UNORM', 'G8R8_G8B8_UNORM', 'R8G8_B8G8_UNORM',
+                              # 'G8R8_G8B8_UNORM', 'R8G8_B8G8_UNORM',
                               # 'R8G8B8A8_SINT', 'R8G8B8A8_SNORM', 'R8G8B8A8_UINT', 'R8G8B8A8_UNORM',
                               # 'R8G8B8A8_UNORM_SRGB', 'R9G9B9E5_SHAREDEXP', 'R10G10B10A2_UINT', 'R11G11B10_FLOAT',
-                              # 'R16G16_FLOAT', 'R16G16_SINT', 'R16G16_SNORM', 'R16G16_UINT', 'R16G16_UNORM',
-                              # 'R32_SINT', 'R32_UINT', 'AYUV',
+                              # 'R10G10B10A2_UNORM', 'R16G16_FLOAT', 'R16G16_SINT', 'R16G16_SNORM', 'R16G16_UINT',
+                              # 'R16G16_UNORM', 'R32_SINT', 'R32_UINT',
                               ]
             case '64BPP':
-                codecsList = ['R16G16B16A16_FLOAT', 'R16G16B16A16_SINT', 'R16G16B16A16_SNORM', 'R16G16B16A16_UINT',
+                codecsList = ['R16G16B16A16_FLOAT', 'R16G16B16A16_UINT', 'R16G16B16A16_UNORM',
                               # TODO На проверку:
-                              # 'R16G16B16A16_UNORM', 'R16G16B16A16_SNORM', 'R32G32_FLOAT', 'R32G32_SINT',
-                              # 'R32G32_UINT',
+                              # 'R16G16B16A16_SINT', 'R16G16B16A16_SNORM', 'R16G16B16A16_SNORM', 'R32G32_FLOAT',
+                              # 'R32G32_SINT', 'R32G32_UINT',
                               ]
             case '96BPP':
                 codecsList = ['R32G32B32_FLOAT',
@@ -196,10 +204,19 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         rotate = self.rotateInput.currentText()
 
         try:
+            bpp = int(self.bppInput.currentText().replace('BPP', ''))
+        except ValueError:
+            bpp = 0
+
+        try:
 
             with open(self.temp_file, 'rb') as temp_image:
                 temp_image.seek(offset)
-                image_data = temp_image.read()
+
+                if not bpp:
+                    image_data = temp_image.read()
+                else:
+                    image_data = temp_image.read(width * height * bpp)
 
         except FileNotFoundError:
             self.fname_info.setText(self.local["file_not_select"])
@@ -238,6 +255,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
             try:
                 new_image = Image.frombytes(codec, (width, height), image_data)
+
+                if codec == 'P':
+
+                    with open('temp/palette.dat', 'rb') as p_file:
+                        pal = sum([[int.from_bytes(p_file.read(1)) for _ in range(3)] for _ in range(256)], [])
+
+                    new_image.putpalette(pal)
 
                 if rotate == self.local["mirror_h"]:
                     new_image = ImageOps.mirror(new_image)
@@ -279,6 +303,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             case 'RGB' | 'HSV' | 'CMYK' | 'YCbCr' | 'RGBA' | 'RGB' | 'PA' | 'LA' | 'F' | \
                  'RGBX' | 'RGBa' | 'L' | 'I;16L' | 'I;16B' | 'I' | '':
                 pass
+            case 'ATI1' | 'ATI2':
+                self.dds_save(width, height, readCodec)
+                image = Image.open(f'{self.temp_path}\\temp.dds')
+                image.save(f'{self.temp_path}\\temp.webp')
             case '1bit':
                 codec = '1'
             case '2bit_grey' | '4bit_grey' | 'R4G4B4':
@@ -298,12 +326,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 image_data = image_data.tobytes()
             case 'LAB':
                 self.ext = 'tif'
-            case 'YUV':
-                codec = 'RGB'
-                image_data = converter.YUV2RGB(image_data)
-            case 'AYUV':
-                codec = 'ARGB'
-                image_data = converter.AYUV2ARGB(image_data)
+            case 'AYUV' | 'YUV':
+                codec = 'RGBA' if 'A' in readCodec else 'RGB'
+                image_data = converter.AYUV2ARGB(image_data, height, width, 4 if 'A' in readCodec else 3)
             case 'HSL':
                 codec = 'HSV'
                 image_data = converter.HSL2HSV(image_data)
@@ -313,8 +338,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 codec = 'RGB' if bpp == '24BPP' else 'RGBA'
             case 'Palette':
                 codec = 'P'
-                pal_sel = PaletteSelector()
-                pal_sel.exec()
 
             case _:
                 readDXT = ('B4G4R4A4_UNORM', )
@@ -341,6 +364,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         return codec, image_data
 
+    def set_buttons(self):
+
+        if self.color_schemeInput.currentText() == 'Palette':
+            self.palette_btn.setGeometry(QRect(30, 430, 160, 30))
+        else:
+            self.palette_btn.setGeometry(QRect(30000, 30000, 160, 30))
+
     def dds_save(self, y, x, codec):
 
         with open(f'{self.temp_path}\\image.dat', 'rb') as temp_dt:
@@ -351,8 +381,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             dds_image = codec_list.DDSCreator()
             dds_image.dds_save(y, x, codec, f'{self.temp_path}\\temp', image_data)
 
-        except (KeyError, ValueError):
-            print('Something wrong...')
+        except (KeyError, ValueError) as error:
+            print(f'{error} Something wrong...')
             pass
 
     def bmp_save(self, x, y, b):
@@ -442,10 +472,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.timer.timeout.connect(lambda: self.clearZip(zip_name, lucky))
 
     def closeEvent(self, event):
-        ext_list = ['bmp', 'png', 'tga', 'webp', 'tif', 'dds']
+        ext_list = ['bmp', 'png', 'tga', 'webp', 'tif', 'dds', 'dat']
 
         if os.path.exists(self.temp_file):
             os.remove(self.temp_file)
+
+        if os.path.exists(f'{self.temp_path}\\palette.dat'):
+            os.remove(f'{self.temp_path}\\palette.dat')
 
         for ext in ext_list:
 
@@ -483,14 +516,20 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         elif y < 560:
             self.resize(x, 570)
         else:
+
+            if self.color_schemeInput.currentText() == 'Palette':
+                self.palette_btn.setGeometry(QRect(30, y - 140, 160, 30))
+            else:
+                self.palette_btn.setGeometry(QRect(30000, 30000, 160, 30))
+
             self.openButton.setGeometry(QRect(30, y - 100, 160, 30))
             self.saveButton.setGeometry(QRect(30, y - 60, 160, 30))
             self.tabWidget.setGeometry(QRect(250, 0, x - 260, y - 10))
             self.reOpenButton.setGeometry(QRect(190, y - 100, 30, 30))
             self.settingButton.setGeometry(QRect(190, y - 60, 30, 30))
             self.imageScrollArea.setGeometry(QRect(0, 0, x - 265, y - 35))
-            self.label_info.setGeometry(QRect(10, y - 210, 230, 50))
-            self.fname_info.setGeometry(QRect(10, y - 150, 230, 40))
+            self.label_info.setGeometry(QRect(10, y - 240, 230, 50))
+            self.fname_info.setGeometry(QRect(10, y - 190, 230, 40))
 
     def clearZip(self, zip_name, lucky):
 

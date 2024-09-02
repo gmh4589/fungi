@@ -1,4 +1,5 @@
-import numpy
+import numpy as np
+from PIL import Image
 
 
 # For 24 and 32 bits
@@ -56,42 +57,37 @@ def HSL2HSV(data):
 
 
 def conv_2BPP(data):
-    byte_array = numpy.frombuffer(data, dtype=numpy.uint8)
-    split_array = numpy.unpackbits(byte_array[:, numpy.newaxis], axis=1)[:, -2:].reshape(-1, 8)
+    byte_array = np.frombuffer(data, dtype=np.uint8)
+    split_array = np.unpackbits(byte_array[:, np.newaxis], axis=1)[:, -2:].reshape(-1, 8)
 
     return split_array.tobytes()
 
 
-def YUV2RGB(data):
-    byte_array = bytes(data)
-    new_data = []
+def AYUV2ARGB(ayuv_bytes, height, width, colors):
+    bytes_len = width * height * colors
 
-    for i in range(0, len(byte_array), 3):
-        Y = i - 16
-        U = (i + 1) - 128
-        V = (i + 2) - 128
-        R = int((1.164 * Y) + (1.596 * V))
-        G = int((1.164 * Y) - (0.392 * U) - (0.813 * V))
-        B = int((1.164 * Y) + (2.017 * U))
-        new_data += [R, G, B]
+    if len(ayuv_bytes) < bytes_len:
+        return b''
 
-    print(new_data)
-    return bytes(new_data)
+    ayuv_bytes = ayuv_bytes[:bytes_len]
+    ayuv_image = np.frombuffer(ayuv_bytes, dtype=np.uint8).reshape((height, width, colors))
 
+    if colors == 4:
+        A = ayuv_image[:, :, 0]  # Альфа-канал
 
-def AYUV2ARGB(data):
-    byte_array = bytes(data)
-    new_data = []
+    Y = ayuv_image[:, :, colors - 3]
+    U = ayuv_image[:, :, colors - 2].astype(np.float32)
+    V = ayuv_image[:, :, colors - 1].astype(np.float32)
 
-    for i in range(0, len(byte_array), 4):
-        A = i
-        Y = (i + 1) - 16
-        U = (i + 2) - 128
-        V = (i + 3) - 128
-        R = int((1.164 * Y) + (1.596 * V))
-        G = int((1.164 * Y) - (0.392 * U) - (0.813 * V))
-        B = int((1.164 * Y) + (2.017 * U))
-        new_data += [A, R, G, B]
+    R = ((Y + 1.402 * V) / 2.402).clip(0, 255).astype(np.uint8)
+    G = ((Y - 0.344136 * U - 0.714136 * V) + 269.85936).clip(0, 255).astype(np.uint8)
+    B = ((Y + 1.772 * U) / 2.772).clip(0, 255).astype(np.uint8)
 
-    print(new_data)
-    return bytes(new_data)
+    if colors == 4:
+        argb_image = np.stack((R, G, B, A), axis=-1)
+    else:
+        argb_image = np.stack((R, G, B), axis=-1)
+
+    argb_image = np.flip(argb_image)
+
+    return argb_image.tobytes()

@@ -28,6 +28,22 @@ class DDSCreator:
         self.pixel_format = b'\x10'
         self.rgb = b'\x02\x00\x00\x00'
 
+    def ATI1(self):
+        self.codec = b'ATI1'
+        self.codec_data = (b'\0' * 21) + b'\x10' + (b'\0' * 18)
+        self.depth = b'\x0a'
+        self.keys = b'\x07'
+        self.pixel_format = b'\x10'
+        self.rgb = b'\x04' + (b'\0' * 3)
+
+    def ATI2(self):
+        self.codec = b'ATI2'
+        self.codec_data = (b'\0' * 21) + b'\x10' + (b'\0' * 18)
+        self.depth = b'\x0a'
+        self.keys = b'\x07'
+        self.pixel_format = b'\x10'
+        self.rgb = b'\x04' + (b'\0' * 3)
+
     def AYUV(self):
         self.codec = b'DX10'
         self.codec_data = b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x08\x10@\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00d\x00\x00\x00\x03\x00\x00\x00\x00\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00'

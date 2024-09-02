@@ -11,6 +11,7 @@ class PaletteSelector(QDialog):
 
     def __init__(self):
         super().__init__()
+        self.returned_palette = []
         self.resize(490, 350)
         self.palette_file = ''
         self.setWindowTitle("Palette Selector")
@@ -51,9 +52,11 @@ class PaletteSelector(QDialog):
         self.actions_value.textChanged.connect(self.show_palette)
 
         self.ok_btn = QPushButton(self.centralwidget)
+        self.ok_btn.clicked.connect(lambda: self.set_palette(True))
         self.ok_btn.setText('OK')
 
         self.cancel_btn = QPushButton(self.centralwidget)
+        self.ok_btn.clicked.connect(lambda: self.set_palette(False))
         self.cancel_btn.setText('CANCEL')
 
         positions = [x for x in range(10, 500, 30)]
@@ -100,6 +103,7 @@ class PaletteSelector(QDialog):
     def show_palette(self):
 
         if self.palette_file:
+            self.returned_palette = []
 
             with open(self.palette_file, 'rb') as pf:
                 pf.seek(int(self.pal_offset.value()))
@@ -139,7 +143,18 @@ class PaletteSelector(QDialog):
                     color = QColor(r, g, b)
                     square = ColorSquare(color)
                     self.grid_layout.addWidget(square, i, j)
+                    self.returned_palette.append(r)
+                    self.returned_palette.append(g)
+                    self.returned_palette.append(b)
                     color_num += 3
+
+    def set_palette(self, ok=False):
+        self.close()
+
+        if ok:
+
+            with open('temp/palette.dat', 'wb') as p_file:
+                p_file.write(bytes(self.returned_palette))
 
 
 class ProgressiveSpinBox(QSpinBox):

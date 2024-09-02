@@ -138,6 +138,8 @@ class Ui_MainWindow:
         self.graphicsPreview.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
         self.imageScrollArea.setWidget(self.scrollAreaWidgetContents)
         self.tabWidget.addTab(self.preView, "")
+
+        self.palette_btn = QPushButton(self.centralwidget)
         self.openButton = QPushButton(self.centralwidget)
         self.reOpenButton = QPushButton(self.centralwidget)
         self.reOpenButton.setStyleSheet('QPushButton {font-size: 15pt;}')
@@ -172,3 +174,4 @@ class Ui_MainWindow:
         self.reOpenButton.setText(_translate("MainWindow", "⭯"))
         self.settingButton.setText(_translate("MainWindow", "⛭"))
         self.langLabel.setText(_translate("MainWindow", 'Language'))
+        self.palette_btn.setText(_translate("MainWindow", 'Set palette'))

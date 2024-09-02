@@ -1,0 +1,7 @@
+ - Added new image types support:
+    - Image with palette
+    - ATI1, ATI2
+    - AYUV, YUV (need fixes, broken colors)
+    - B8G8R8A8_UNORM, B8G8R8X8_UNORM, R16G16B16A16_UNORM
+
+ - All supported codecs - 70
