@@ -10,7 +10,11 @@ class DDSCreator:
         self.rgb = b''
 
     def dds_save(self, y, x, codec, name, data):
-        self.__getattribute__(codec)()
+
+        try:
+            self.__getattribute__(codec)()
+        except AttributeError:
+            self.B8G8R8A8_UNORM()
 
         with open(f'{name}.dds', 'wb') as dds_file:
             dds_file.write(b'DDS\x20\x7C\x00\x00\x00' +

@@ -113,8 +113,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                     self.offset_hexData.setText(hex_offset.replace(char, ''))
 
     def createList(self):
-        # работает: 70
-        # проблемы: 45
+        # работает: 72
+        # проблемы: 40
 
         currentChange = self.bppInput.currentText()
         # bpp = str(int(int(currentChange.replace('BPP', '')) / 3))
@@ -141,10 +141,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             # 5-bit RGB with 1-bit alpha chanel, R5G6B5, 16-bit Grayscale
             case '16BPP':
                 codecsList = ['B5G6R5_UNORM', 'B5G5R5A1_UNORM', 'B4G4R4A4_UNORM', 'R16_FLOAT', 'R16_UNORM', 'LA', 'PA',
-                              'I;16L', 'I;16B'
+                              'I;16L', 'I;16B', 'R8G8_UNORM',
                               # TODO На проверку:
-                              # 'Y216', 'Y416', 'R8G8_SINT', 'R8G8_SNORM', 'R8G8_UINT', 'R8G8_UNORM', 'R16_SINT',
-                              # 'R16_SNORM', 'R16_UINT',
+                              # 'Y216', 'Y416', 'R8G8_SINT', 'R8G8_SNORM', 'R8G8_UINT', 'R16_SINT',
+                              # 'R16_SNORM', 'R16_UINT', 'G4R4G4B4_UNORM', 'R4G4B4G4_UNORM',
                               ]
             # 8-bit RGB, HSL, HSV, LAB, YCbCr
             case '24BPP':
@@ -157,18 +157,17 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 codecsList = ['RGBA', 'RBGA', 'GBRA', 'GRBA', 'BRGA', 'BGRA', 'ARGB', 'ARBG', 'AGBR', 'AGRB', 'ABRG',
                               'ABGR', 'CMYK', 'B8G8R8A8_UNORM_SRGB', 'B8G8R8X8_UNORM_SRGB', 'B8G8R8A8_UNORM',
                               'B8G8R8X8_UNORM', 'R10G10B10A2_UNORM', 'R10G10B10_XR_BIAS_A2_UNORM', 'R32_FLOAT',
-                              'I', 'F', 'AYUV'
+                              'I', 'F', 'AYUV',
                               # TODO На проверку:
-                              # 'G8R8_G8B8_UNORM', 'R8G8_B8G8_UNORM',
-                              # 'R8G8B8A8_SINT', 'R8G8B8A8_SNORM', 'R8G8B8A8_UINT', 'R8G8B8A8_UNORM',
-                              # 'R8G8B8A8_UNORM_SRGB', 'R9G9B9E5_SHAREDEXP', 'R10G10B10A2_UINT', 'R11G11B10_FLOAT',
+                              # 'R8G8B8A8_SINT', 'R8G8B8A8_SNORM', 'R8G8B8A8_UINT', 'R9G9B9E5_SHAREDEXP',
+                              # 'R10G10B10A2_UNORM', 'R11G11B10_FLOAT',
                               # 'R10G10B10A2_UNORM', 'R16G16_FLOAT', 'R16G16_SINT', 'R16G16_SNORM', 'R16G16_UINT',
                               # 'R16G16_UNORM', 'R32_SINT', 'R32_UINT',
                               ]
             case '64BPP':
                 codecsList = ['R16G16B16A16_FLOAT', 'R16G16B16A16_UINT', 'R16G16B16A16_UNORM',
                               # TODO На проверку:
-                              # 'R16G16B16A16_SINT', 'R16G16B16A16_SNORM', 'R16G16B16A16_SNORM', 'R32G32_FLOAT',
+                              # 'R16G16B16A16_SINT', 'R16G16B16A16_SNORM', 'R32G32_FLOAT',
                               # 'R32G32_SINT', 'R32G32_UINT',
                               ]
             case '96BPP':
@@ -182,11 +181,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                               # 'R32G32B32A32_SINT', 'R32G32B32A32_UINT'
                               ]
             case 'DirectX':
-                codecsList = ['BC1_UNORM', 'BC2_UNORM', 'BC3_UNORM', 'BC4_UNORM', 'BC5_UNORM', 'BC6H_SF16',
+                codecsList = ['BC1_UNORM', 'BC2_UNORM', 'BC3_UNORM', 'BC4_UNORM', 'BC5_SNORM', 'BC5_UNORM', 'BC6H_SF16',
                               'BC6H_UF16', 'BC7_UNORM', 'BC7_UNORM_SRGB', 'BC1_UNORM_SRGB', 'BC2_UNORM_SRGB',
                               'BC3_UNORM_SRGB',
                               # TODO На проверку:
-                              # 'BC4_SNORM', 'BC5_SNORM',
+                              # 'BC4_SNORM',
                               ]
             case _:
                 codecsList = []
@@ -257,11 +256,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 new_image = Image.frombytes(codec, (width, height), image_data)
 
                 if codec == 'P':
+                    try:
+                        with open('temp/palette.dat', 'rb') as p_file:
+                            pal = sum([[int.from_bytes(p_file.read(1)) for _ in range(3)] for _ in range(256)], [])
 
-                    with open('temp/palette.dat', 'rb') as p_file:
-                        pal = sum([[int.from_bytes(p_file.read(1)) for _ in range(3)] for _ in range(256)], [])
-
-                    new_image.putpalette(pal)
+                        new_image.putpalette(pal)
+                    except FileNotFoundError:
+                        pass
 
                 if rotate == self.local["mirror_h"]:
                     new_image = ImageOps.mirror(new_image)
@@ -297,13 +298,14 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         height = int(self.heightInput.value())
         codec = readCodec
         self.ext = 'webp'
+        print(len(image_data))
 
         match readCodec:
 
             case 'RGB' | 'HSV' | 'CMYK' | 'YCbCr' | 'RGBA' | 'RGB' | 'PA' | 'LA' | 'F' | \
                  'RGBX' | 'RGBa' | 'L' | 'I;16L' | 'I;16B' | 'I' | '':
                 pass
-            case 'ATI1' | 'ATI2':
+            case 'ATI1' | 'ATI2' | 'BC5_SNORM' | 'BC5_UNORM' | 'R8G8_UNORM':
                 self.dds_save(width, height, readCodec)
                 image = Image.open(f'{self.temp_path}\\temp.dds')
                 image.save(f'{self.temp_path}\\temp.webp')
@@ -326,9 +328,22 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 image_data = image_data.tobytes()
             case 'LAB':
                 self.ext = 'tif'
-            case 'AYUV' | 'YUV':
-                codec = 'RGBA' if 'A' in readCodec else 'RGB'
-                image_data = converter.AYUV2ARGB(image_data, height, width, 4 if 'A' in readCodec else 3)
+            case 'AYUV':
+                codec = 'YCbCr'
+
+                try:
+                    image_data = image_data[:height * width * 4]
+                    image_data = converter.crop_color(bytes(reversed(list(image_data))), height, width, 0)
+                    new_image = Image.frombytes(codec, (width, height), image_data).rotate(180)
+                    image_data = new_image.tobytes()
+                except TypeError:
+                    pass
+            case 'G4R4G4B4_UNORM' | 'R4G4B4G4_UNORM':
+                codec = 'RGB'
+                order = readCodec.replace('_UNORM', '').replace('4', '')
+                image_data = converter.R4G4B4G4_to_RGB8(image_data, height, width, order)
+            case 'YCbCr' | 'YUV':
+                codec = 'YCbCr'
             case 'HSL':
                 codec = 'HSV'
                 image_data = converter.HSL2HSV(image_data)

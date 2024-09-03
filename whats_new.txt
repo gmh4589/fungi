@@ -1,4 +1,14 @@
- - Added new image types support:
+September 2, 2024
+
+ - Fixed AYUV and YUV broken colors
+ - Added new image codecs support:
+    - BC5_SNORM, R8G8_UNORM
+
+ - All supported codecs - 72
+
+September 2, 2024
+
+ - Added new image codecs support:
     - Image with palette
     - ATI1, ATI2
     - AYUV, YUV (need fixes, broken colors)

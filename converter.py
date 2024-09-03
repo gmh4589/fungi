@@ -63,31 +63,46 @@ def conv_2BPP(data):
     return split_array.tobytes()
 
 
-def AYUV2ARGB(ayuv_bytes, height, width, colors):
+def crop_data(data, height, width, colors=4):
+
     bytes_len = width * height * colors
 
-    if len(ayuv_bytes) < bytes_len:
+    if len(data) < bytes_len:
         return b''
 
-    ayuv_bytes = ayuv_bytes[:bytes_len]
-    ayuv_image = np.frombuffer(ayuv_bytes, dtype=np.uint8).reshape((height, width, colors))
+    cropped = data[:bytes_len]
+    print(len(data), len(cropped))
+    return np.frombuffer(cropped, dtype=np.uint8).reshape((height, width, colors))
 
-    if colors == 4:
-        A = ayuv_image[:, :, 0]  # Альфа-канал
 
-    Y = ayuv_image[:, :, colors - 3]
-    U = ayuv_image[:, :, colors - 2].astype(np.float32)
-    V = ayuv_image[:, :, colors - 1].astype(np.float32)
+def crop_color(image_data, height, width, a_order=0):
+    image_data = crop_data(image_data, height, width)
+    A, R, G, B = image_data[:, :, 0], image_data[:, :, 1], image_data[:, :, 2], image_data[:, :, 3]
+    order_map = {0: (R, G, B), 1: (A, G, B), 2: (A, R, B), 3: (A, R, G)}
+    rgb_image = np.stack(order_map.get(a_order, (R, G, B)), axis=-1)
 
-    R = ((Y + 1.402 * V) / 2.402).clip(0, 255).astype(np.uint8)
-    G = ((Y - 0.344136 * U - 0.714136 * V) + 269.85936).clip(0, 255).astype(np.uint8)
-    B = ((Y + 1.772 * U) / 2.772).clip(0, 255).astype(np.uint8)
+    return rgb_image.tobytes()
 
-    if colors == 4:
-        argb_image = np.stack((R, G, B, A), axis=-1)
-    else:
-        argb_image = np.stack((R, G, B), axis=-1)
 
-    argb_image = np.flip(argb_image)
+def R4G4B4G4_to_RGB8(image_data, height, width, order='RGBG'):
+    image = crop_data(image_data, height, width, 2)
 
-    return argb_image.tobytes()
+    if order == 'RGBG':
+        R4 = image[:, :, 0] << 4
+        G4_1 = image[:, :, 0] >> 4
+        B4 = image[:, :, 1] << 4
+        G4_2 = image[:, :, 1] >> 4
+    elif order == 'GRGB':
+        G4_1 = image[:, :, 0] << 4
+        R4 = image[:, :, 0] >> 4
+        G4_2 = image[:, :, 1] << 4
+        B4 = image[:, :, 1] >> 4
+
+    # Преобразование 4 бит в 8 бит (расширение старших бит)
+    R8 = R4 << 4
+    G8 = (G4_1 >> 4) | (G4_2 << 4)  # Усредняем два зеленых канала
+    B8 = B4 << 4
+
+    rgb_image = np.stack((R8, G8, B8), axis=-1)
+
+    return rgb_image.tobytes()
