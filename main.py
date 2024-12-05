@@ -9,7 +9,7 @@ from PyQt6.QtWidgets import QApplication, QMainWindow
 from PyQt6.QtGui import QPixmap, QIcon
 from PyQt6.QtCore import Qt, QRect, QTimer
 
-from PIL import Image, ImageOps, UnidentifiedImageError, ImageFile
+from PIL import Image, ImageOps, UnidentifiedImageError, ImageFile, ImageFilter
 
 import converter
 import codec_list
@@ -48,7 +48,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                                 '4BPP',
                                 '8BPP',
                                 # '10BPP',
-                                # '12BPP',
+                                '12BPP',
                                 '16BPP',
                                 '24BPP',
                                 '32BPP',
@@ -113,8 +113,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                     self.offset_hexData.setText(hex_offset.replace(char, ''))
 
     def createList(self):
-        # работает: 72
-        # проблемы: 40
+        # работает: 88
+        # проблемы: 36
 
         currentChange = self.bppInput.currentText()
         # bpp = str(int(int(currentChange.replace('BPP', '')) / 3))
@@ -125,25 +125,27 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             # 1-bit Grayscale
             case '1BPP':
                 codecsList = ['1bit']
-            case '2BPP':
-                codecsList = ['2bit_grey']
+            # case '2BPP':
+            #     codecsList = ['2bit_grey']
             case '4BPP':
                 codecsList = ['4bit_grey']
             case '8BPP':
-                codecsList = ['L', 'A8_UNORM', 'R8_UNORM', 'ATI1',
+                codecsList = ['L', 'A8_UNORM', 'R8_SNORM', 'R8_UNORM', 'R8_SINT', 'ATI1',
                               # TODO На проверку:
-                              # 'R8_SINT', 'R8_SNORM', 'R8_UINT',
+                              # 'R8_SINT', 'R8_UINT',
                               ]
             case '12BPP':
                 codecsList = ['R4G4B4']
             # case '10BPP':
-            #     codecsList = ['Y210', 'Y410']
+            #     codecsList = ['Y210', 'Y420']
             # 5-bit RGB with 1-bit alpha chanel, R5G6B5, 16-bit Grayscale
             case '16BPP':
                 codecsList = ['B5G6R5_UNORM', 'B5G5R5A1_UNORM', 'B4G4R4A4_UNORM', 'R16_FLOAT', 'R16_UNORM', 'LA', 'PA',
-                              'I;16L', 'I;16B', 'R8G8_UNORM',
+                              'I;16L', 'I;16B', 'R8G8_UNORM', 'R8B8_UNORM', 'G8R8_UNORM', 'G8B8_UNORM', 'B8G8_UNORM',
+                              'B8R8_UNORM','R8G8_SNORM', 'R8B8_SNORM', 'G8R8_SNORM', 'G8B8_SNORM', 'B8G8_SNORM',
+                              'B8R8_SNORM', 'R16_SNORM',
                               # TODO На проверку:
-                              # 'Y216', 'Y416', 'R8G8_SINT', 'R8G8_SNORM', 'R8G8_UINT', 'R16_SINT',
+                              # 'Y216', 'Y416', 'R8G8_SINT', 'R8G8_UINT', 'R16_SINT',
                               # 'R16_SNORM', 'R16_UINT', 'G4R4G4B4_UNORM', 'R4G4B4G4_UNORM',
                               ]
             # 8-bit RGB, HSL, HSV, LAB, YCbCr
@@ -157,17 +159,17 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 codecsList = ['RGBA', 'RBGA', 'GBRA', 'GRBA', 'BRGA', 'BGRA', 'ARGB', 'ARBG', 'AGBR', 'AGRB', 'ABRG',
                               'ABGR', 'CMYK', 'B8G8R8A8_UNORM_SRGB', 'B8G8R8X8_UNORM_SRGB', 'B8G8R8A8_UNORM',
                               'B8G8R8X8_UNORM', 'R10G10B10A2_UNORM', 'R10G10B10_XR_BIAS_A2_UNORM', 'R32_FLOAT',
-                              'I', 'F', 'AYUV',
+                              'R8G8B8A8_SNORM', 'I', 'F', 'AYUV',
                               # TODO На проверку:
-                              # 'R8G8B8A8_SINT', 'R8G8B8A8_SNORM', 'R8G8B8A8_UINT', 'R9G9B9E5_SHAREDEXP',
-                              # 'R10G10B10A2_UNORM', 'R11G11B10_FLOAT',
-                              # 'R10G10B10A2_UNORM', 'R16G16_FLOAT', 'R16G16_SINT', 'R16G16_SNORM', 'R16G16_UINT',
-                              # 'R16G16_UNORM', 'R32_SINT', 'R32_UINT',
+                              # 'R8G8B8A8_SINT', 'R8G8B8A8_UINT', 'R9G9B9E5_SHAREDEXP',
+                              # 'R11G11B10_FLOAT',
+                              # 'R16G16_FLOAT', 'R16G16_SINT', 'R16G16_UINT',
+                              # 'R32_SINT', 'R32_UINT', 'R16G16_SNORM', 'R16G16_UNORM',
                               ]
             case '64BPP':
-                codecsList = ['R16G16B16A16_FLOAT', 'R16G16B16A16_UINT', 'R16G16B16A16_UNORM',
+                codecsList = ['R16G16B16A16_FLOAT', 'R16G16B16A16_UINT', 'R16G16B16A16_UNORM', 'R16G16B16A16_SNORM',
                               # TODO На проверку:
-                              # 'R16G16B16A16_SINT', 'R16G16B16A16_SNORM', 'R32G32_FLOAT',
+                              # 'R16G16B16A16_SINT', 'R32G32_FLOAT',
                               # 'R32G32_SINT', 'R32G32_UINT',
                               ]
             case '96BPP':
@@ -181,11 +183,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                               # 'R32G32B32A32_SINT', 'R32G32B32A32_UINT'
                               ]
             case 'DirectX':
-                codecsList = ['BC1_UNORM', 'BC2_UNORM', 'BC3_UNORM', 'BC4_UNORM', 'BC5_SNORM', 'BC5_UNORM', 'BC6H_SF16',
-                              'BC6H_UF16', 'BC7_UNORM', 'BC7_UNORM_SRGB', 'BC1_UNORM_SRGB', 'BC2_UNORM_SRGB',
+                codecsList = ['BC1_UNORM', 'BC2_UNORM', 'BC3_UNORM', 'BC4_SNORM', 'BC4_UNORM', 'BC5_SNORM', 'BC5_UNORM',
+                              'BC6H_SF16', 'BC6H_UF16', 'BC7_UNORM', 'BC7_UNORM_SRGB', 'BC1_UNORM_SRGB', 'BC2_UNORM_SRGB',
                               'BC3_UNORM_SRGB',
-                              # TODO На проверку:
-                              # 'BC4_SNORM',
                               ]
             case _:
                 codecsList = []
@@ -298,28 +298,29 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         height = int(self.heightInput.value())
         codec = readCodec
         self.ext = 'webp'
-        print(len(image_data))
+        image_data = converter.snorm2unorm(image_data) if '_SNORM' in readCodec else image_data
 
         match readCodec:
 
             case 'RGB' | 'HSV' | 'CMYK' | 'YCbCr' | 'RGBA' | 'RGB' | 'PA' | 'LA' | 'F' | \
                  'RGBX' | 'RGBa' | 'L' | 'I;16L' | 'I;16B' | 'I' | '':
                 pass
-            case 'ATI1' | 'ATI2' | 'BC5_SNORM' | 'BC5_UNORM' | 'R8G8_UNORM':
+            case 'ATI1' | 'ATI2' | 'BC5_SNORM' | 'BC5_UNORM' | 'B4G4R4A4_UNORM':
                 self.dds_save(width, height, readCodec)
                 image = Image.open(f'{self.temp_path}\\temp.dds')
                 image.save(f'{self.temp_path}\\temp.webp')
             case '1bit':
                 codec = '1'
-            case '2bit_grey' | '4bit_grey' | 'R4G4B4':
-                bit = 0
+            case '4bit_grey' | '8bit_grey':
+                # 'R4G4B4' | '2bit_grey' |
+                bit = int(readCodec[0])
 
-                for sym in readCodec:
-
-                    try:
-                        bit += int(sym)
-                    except ValueError:
-                        pass
+                # for sym in readCodec:
+                #
+                #     try:
+                #         bit += int(sym)
+                #     except ValueError:
+                #         pass
 
                 self.bmp_save(width, height, bit)
                 self.ext = 'bmp'
@@ -338,6 +339,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                     image_data = new_image.tobytes()
                 except TypeError:
                     pass
+
             case 'G4R4G4B4_UNORM' | 'R4G4B4G4_UNORM':
                 codec = 'RGB'
                 order = readCodec.replace('_UNORM', '').replace('4', '')
@@ -353,19 +355,33 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 codec = 'RGB' if bpp == '24BPP' else 'RGBA'
             case 'Palette':
                 codec = 'P'
+            case 'R8G8_UNORM' | 'R8B8_UNORM' | 'G8R8_UNORM' | 'G8B8_UNORM' | 'B8G8_UNORM' | 'B8R8_UNORM' | \
+                 'R8G8_SNORM' | 'R8B8_SNORM' | 'G8R8_SNORM' | 'G8B8_SNORM' | 'B8G8_SNORM' | 'B8R8_SNORM':
+                image_data = converter.add_channel(image_data, height, width)
+                color_order = readCodec.replace('_UNORM', '').replace('_SNORM', '').replace('8', '')
+                color_order += 'R' if 'R' not in color_order else ('G' if 'G' not in color_order else 'B')
+                image_data = converter.BGR2RGB(image_data, color_order)
+                codec = 'RGB'
+                image = Image.frombytes(codec, (width, height), image_data)
+
+                image.save(f'{self.temp_path}\\temp.webp')
 
             case _:
-                readDXT = ('B4G4R4A4_UNORM', )
                 self.dds_save(width, height, readCodec)
 
                 try:
 
-                    self.ext = 'tga' if readCodec in readDXT else 'png'
-                    Popen(f'{"data/readdxt" if readCodec in readDXT else "data/texconv -ft PNG"} '
-                          f'{self.temp_path}\\temp.dds', SW_HIDE).wait()
-                    shutil.move(f'{self.temp_path}\\temp00.tga' if readCodec in readDXT else 'temp.PNG',
-                                f'{self.temp_path}\\temp.{self.ext}')
+                    if '_SNORM' in readCodec:
+                        self.dds_save(width, height,readCodec.replace('_S', '_U'), image_data)
+
+                    self.ext = 'png'
+                    Popen('"data/texconv -ft PNG" {self.temp_path}\\temp.dds', SW_HIDE).wait()
+                    shutil.move('temp.PNG', f'{self.temp_path}\\temp.{self.ext}')
+
                     image_data = Image.open(f'{self.temp_path}\\temp.{self.ext}')
+
+                    if '_SNORM' in readCodec:
+                        image_data = image_data.filter(ImageFilter.MedianFilter)
 
                     codec = image_data.mode
                     image_data = image_data.tobytes()
@@ -386,11 +402,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         else:
             self.palette_btn.setGeometry(QRect(30000, 30000, 160, 30))
 
-    def dds_save(self, y, x, codec):
+    def dds_save(self, y, x, codec, image_data=None):
 
-        with open(f'{self.temp_path}\\image.dat', 'rb') as temp_dt:
-            temp_dt.seek(int(self.offsetInput.value()))
-            image_data = temp_dt.read()
+        if image_data is None:
+            with open(f'{self.temp_path}\\image.dat', 'rb') as temp_dt:
+                temp_dt.seek(int(self.offsetInput.value()))
+                image_data = temp_dt.read()
 
         try:
             dds_image = codec_list.DDSCreator()
@@ -407,9 +424,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             temp_dt.seek(int(self.offsetInput.value()))
             image_data = temp_dt.read()
 
-        if b == 2:
-            image_data = converter.conv_2BPP(image_data)
-            b = 4
+        # if b == 2:
+        #     image_data = converter.conv_2BPP(image_data)
+        #     b = 4
 
         with open(f'{self.temp_path}\\temp.bmp', 'wb') as bmp_file:
             bmp_file.write(b'BM' + (len(image_data) + 0x36).to_bytes(4, byteorder='little') +

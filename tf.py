@@ -102,12 +102,18 @@ class Ui_MainWindow:
         self.formLayout.setWidget(9, QFormLayout.ItemRole.LabelRole, self.rotateLabel)
         self.rotateInput = QComboBox(self.formLayoutWidget)
         self.formLayout.setWidget(9, QFormLayout.ItemRole.FieldRole, self.rotateInput)
+
+        # self.filterLabel = QLabel(self.formLayoutWidget)
+        # self.formLayout.setWidget(10, QFormLayout.ItemRole.LabelRole, self.filterLabel)
+        # self.filterInput = QComboBox(self.formLayoutWidget)
+        # self.formLayout.setWidget(10, QFormLayout.ItemRole.FieldRole, self.filterInput)
+
         self.formatData = QLabel(self.formLayoutWidget)
-        self.formLayout.setWidget(10, QFormLayout.ItemRole.FieldRole, self.formatData)
+        self.formLayout.setWidget(11, QFormLayout.ItemRole.FieldRole, self.formatData)
         self.langLabel = QLabel(self.formLayoutWidget)
-        self.formLayout.setWidget(11, QFormLayout.ItemRole.LabelRole, self.langLabel)
+        self.formLayout.setWidget(12, QFormLayout.ItemRole.LabelRole, self.langLabel)
         self.langInput = QComboBox(self.formLayoutWidget)
-        self.formLayout.setWidget(11, QFormLayout.ItemRole.FieldRole, self.langInput)
+        self.formLayout.setWidget(13, QFormLayout.ItemRole.FieldRole, self.langInput)
         self.lng_list = {}
 
         for path, folder, lang_file in os.walk('data\\local'):
@@ -132,7 +138,6 @@ class Ui_MainWindow:
         self.graphicsPreview.setGeometry(QtCore.QRect(0, 0, 520, 510))
         self.graphicsPreview.setAutoFillBackground(False)
         self.graphicsPreview.setStyleSheet("font: 20pt \"MS Shell Dlg 2\";")
-        self.graphicsPreview.setText("")
         self.graphicsPreview.setTextFormat(QtCore.Qt.TextFormat.AutoText)
         self.graphicsPreview.setScaledContents(False)
         self.graphicsPreview.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
@@ -175,3 +180,4 @@ class Ui_MainWindow:
         self.settingButton.setText(_translate("MainWindow", "⛭"))
         self.langLabel.setText(_translate("MainWindow", 'Language'))
         self.palette_btn.setText(_translate("MainWindow", 'Set palette'))
+        # self.filterLabel.setText(_translate("MainWindow", 'Set filter'))

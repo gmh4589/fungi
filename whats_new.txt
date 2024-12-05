@@ -1,17 +1,15 @@
-September 2, 2024
+1.05
 
- - Fixed AYUV and YUV broken colors
- - Added new image codecs support:
-    - BC5_SNORM, R8G8_UNORM
+    - Added new image codecs support:
+    - BC4_SNORM, R8_SNORM, R8B8_UNORM, G8R8_UNORM, G8B8_UNORM, B8G8_UNORM, B8R8_UNORM, R8G8_SNORM, R8B8_SNORM,
+        G8R8_SNORM, G8B8_SNORM, B8G8_SNORM, B8R8_SNORM, R8G8B8A8_SNORM, R16G16B16A16_SNORM, R16_SNORM
 
- - All supported codecs - 72
+    All supported codecs - 88
 
-September 2, 2024
+1.04
 
- - Added new image codecs support:
-    - Image with palette
-    - ATI1, ATI2
-    - AYUV, YUV (need fixes, broken colors)
-    - B8G8R8A8_UNORM, B8G8R8X8_UNORM, R16G16B16A16_UNORM
+    - Added codecs support:
+        - AYUV, YUV, ATI1, ATI2, B8G8R8A8_UNORM, B8G8R8X8_UNORM, R16G16B16A16_UNORM, BC5_SNORM, R8G8_UNORM
+    - Added support images with palett
 
- - All supported codecs - 70
+    All supported codecs: 72

@@ -1,5 +1,5 @@
+
 import numpy as np
-from PIL import Image
 
 
 # For 24 and 32 bits
@@ -98,11 +98,40 @@ def R4G4B4G4_to_RGB8(image_data, height, width, order='RGBG'):
         G4_2 = image[:, :, 1] << 4
         B4 = image[:, :, 1] >> 4
 
-    # Преобразование 4 бит в 8 бит (расширение старших бит)
     R8 = R4 << 4
-    G8 = (G4_1 >> 4) | (G4_2 << 4)  # Усредняем два зеленых канала
+    G8 = (G4_1 >> 4) | (G4_2 << 4)
     B8 = B4 << 4
 
     rgb_image = np.stack((R8, G8, B8), axis=-1)
 
     return rgb_image.tobytes()
+
+
+def snorm2unorm(image_data: bytes):
+    data = np.array(bytearray(image_data), dtype=np.int16)
+    data = data.astype(np.uint8) + 128
+
+    return data.tobytes()
+
+
+def add_channel(image_data: bytes, height: int, width: int):
+    # Преобразуем байты в numpy массив
+    image = np.frombuffer(image_data, dtype=np.uint8)[:width * height * 2]
+    image = image.reshape((height, width, 2))  # Предполагается, что изображение имеет 2 канала
+
+    # Разделяем каналы
+    ch1 = image[:, :, 0]
+    ch2 = image[:, :, 1]
+    ch3 = np.zeros_like(ch1, dtype=np.uint8)  # Заполняем третий канал нулями
+
+    # Создаем изображение с тремя каналами (RGB)
+    rgb_image = np.stack((ch1, ch2, ch3), axis=-1)
+
+    return rgb_image.tobytes()
+
+
+def to8bit(image_data: bytes, bit=16):
+    image = np.frombuffer(image_data, dtype=np.uint16 if bit == 16 else 32)
+    image = (image / 256 if bit == 16 else 65536) - 1
+
+    return image.tobytes()
