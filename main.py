@@ -44,7 +44,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.compressInput.setCurrentText(self.local["no_zip"])
         self.bppInput.addItems(['Palette',
                                 '1BPP',
-                                '2BPP',
+                                # '2BPP',
                                 '4BPP',
                                 '8BPP',
                                 # '10BPP',
