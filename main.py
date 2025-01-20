@@ -375,7 +375,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                         self.dds_save(width, height,readCodec.replace('_S', '_U'), image_data)
 
                     self.ext = 'png'
-                    Popen('"data/texconv -ft PNG" {self.temp_path}\\temp.dds', SW_HIDE).wait()
+                    Popen('data/texconv -ft PNG {self.temp_path}\\temp.dds', SW_HIDE).wait()
                     shutil.move('temp.PNG', f'{self.temp_path}\\temp.{self.ext}')
 
                     image_data = Image.open(f'{self.temp_path}\\temp.{self.ext}')
