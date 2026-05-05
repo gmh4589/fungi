@@ -1,3 +1,9 @@
+
+![GitHub Downloads](https://img.shields.io/github/downloads/gmh4589/fungi/total?logo=github&label=GitHub%20Downloads)
+
+![Current Release](https://img.shields.io/github/v/release/gmh4589/fungi?label=Current%20Release)
+
+
 1. Open the file in which you want to find a texture or RAW image. For example, let's select the file example1.dat, stored in the example folder in the root of the program
 ![Screenshot_1](https://github.com/gmh4589/fungi/assets/41452060/5b09eb42-0838-4fe6-829a-21c1a4429190)
 
